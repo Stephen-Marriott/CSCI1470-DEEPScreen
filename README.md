@@ -19,6 +19,7 @@ pip install -r requirements.txt
 ```
 ## Descriptions of folders and files in the DEEPScreen repository
 
+
 * **bin** folder includes the source code of DEEPScreen.
 
 * **training_files** folder includes the files directly used in the training and testing of the system:
