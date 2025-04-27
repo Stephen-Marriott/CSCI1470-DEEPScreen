@@ -16,6 +16,10 @@ import json
 from original_model_tf import DeepScreen_Tensorflow
 from alt_CNN_tf import Alternative_CNN
 from attention_CNN import Attention_CNN
+from datetime import date
+import time
+import warnings
+warnings.filterwarnings(action='ignore')
 
 
 def load_image(file_path):
@@ -105,8 +109,11 @@ def creat_and_run_model(model_type,
     else:
         raise ValueError("No Specified Model Type")
         
-    model.compile(optimizer=optimizer_choice, loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True), metrics = ['accuracy','precision'])
-
+    model.compile(optimizer=optimizer_choice, loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True), 
+                  metrics = ['Accuracy','Precision','Recall','F1Score','TruePositives','TrueNegatives',
+                             'FalsePositives','FalseNegatives'])
+    
+    start_time = time.time()
 
     history = model.fit(
         x=training_images,
@@ -119,16 +126,19 @@ def creat_and_run_model(model_type,
         verbose=vb
         )
 
+    end_time = time.time()
+    average_epoch_time = (end_time-start_time)/epochs
+    
     best_model = tf.keras.models.load_model(model_fp)
 
-    loss, accuracy, precision = best_model.evaluate(test_images, test_labels, verbose=0)
+    loss, accuracy, precision,recall,F1score,TP,TN,FP,FN = best_model.evaluate(test_images, test_labels, verbose=0)
 
     print(f'Test Loss of Best Model: {loss:.4f}')
     print(f'Test Accuracy of Best Model: {accuracy:.4f}')
     print(f'Test Precision of Best Model: {precision:.4f}')
 
     
-    return loss, accuracy, precision
+    return loss, accuracy, precision, recall, F1score, TP, TN, FP, FN,average_epoch_time
 
 
 def process_target_protein(protein_name,
@@ -140,13 +150,14 @@ def process_target_protein(protein_name,
                            dropout_rate = .25,
                            epochs = 20,
                            batch_size = 32,
-                           optimizer_choice = 'adam',
+                           optimizer_choice = tf.keras.optimizers.Adam(learning_rate=0.001),
                            vb = 0):
+    
     
     
     train_imgs,train_labels,val_imgs,val_labels,test_imgs,test_labels = get_protein_data(protein_name, data_dir)
     
-    loss,accuracy,precision = creat_and_run_model(model_type,
+    loss, accuracy, precision, recall, F1score, TP, TN, FP, FN,average_epoch_time = creat_and_run_model(model_type,
                                                   protein_name,
                                                   model_dir,
                                                   train_imgs,
@@ -167,29 +178,45 @@ def process_target_protein(protein_name,
                    'Model Type': model_type,
                    'Test Loss':loss,
                    'Test Accuracy':accuracy,
-                   'Test Precision':precision}
+                   'Test Precision':precision,
+                   'Test Recall':recall,
+                   'Test F1 Score':F1score,
+                   'Test True Positives':TP,
+                   'Test True Negatives':TN,
+                   'Test False Positives':FP,
+                   'Test False Negatives':FN,
+                   'Average Epoch Time':average_epoch_time}
     
     return result_dict
     
     
 
-protein_list = ["CHEMBL1862"]
+
+protein_list = ["CHEMBL1862",'CHEMBL2581','CHEMBL253']
     
-dd = r"/Users/wwelsh/Downloads/"
-mp = r"/Users/wwelsh/Documents/GitHub/working_final_project_1470/Models/"
+dd = ...
+mp = ...
+
 model_types = ['DEEPScreen','Alternative_CNN','Attention_CNN']
-#model_types = ['Attention_CNN']
+
 result_list = []
 
 for p in protein_list:
     print(f'Modeling Protein: {p}')
     for m in model_types:
         print(f'Model Type: {m}')
-        result = process_target_protein(p, dd, mp, m,vb=1,epochs=10)
+        if m!= 'DEEPScreen':
+            result = process_target_protein(p, dd, mp, m,vb=1,epochs=20,optimizer_choice = tf.keras.optimizers.Adam(learning_rate=0.0001))
+        else:
+            result = process_target_protein(p, dd, mp, m,vb=1,epochs=20,optimizer_choice = tf.keras.optimizers.Adam(learning_rate=0.001))
         result_list.append(result)
 
 result_df = pd.DataFrame(result_list)
 
-    
+result_df.to_csv('Test Model Results '+str(date.today())+'.csv',index=False)
+
+
+
+
     
     

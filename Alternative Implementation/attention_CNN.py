@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 import json
 
-#Taken from https://github.com/laugh12321/3D-Attention-Keras
+#Adapted from https://github.com/laugh12321/3D-Attention-Keras
 class spatial_attention(tf.keras.layers.Layer):
     """ spatial attention module 
         
@@ -56,7 +56,7 @@ class Attention_CNN(tf.keras.Model):
         self.act1 = tf.keras.layers.ReLU()
         self.pool1 = tf.keras.layers.MaxPool2D(pool_size=(2, 2), strides=(2, 2))
 
-        self.conv2 = tf.keras.layers.Conv2D(64, 2)
+        self.conv2 = tf.keras.layers.Conv2D(32, 2)
         self.bn2 = tf.keras.layers.BatchNormalization(axis=-1)
         self.act2 = tf.keras.layers.ReLU()
         self.pool2 = tf.keras.layers.MaxPool2D(pool_size=(2, 2), strides=(2, 2))

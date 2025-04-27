@@ -174,3 +174,8 @@ cython_debug/
 .pypirc
 .DS_Store
 /Alternative Implementation/Models
+training_files/.DS_Store
+result_files/.DS_Store
+result_files/experiments/.DS_Store
+training_files/.DS_Store
+training_files/target_training_datasets/.DS_Store
