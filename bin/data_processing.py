@@ -437,7 +437,7 @@ class DEEPScreenDataset(tf.data.Dataset):
                                                  borderValue=(255, 255, 255))  # cv2.BORDER_CONSTANT, 255)
 
         img_arr = np.array(img_arr) / 255.0
-        img_arr = img_arr.transpose((2, 0, 1))
+#        img_arr = img_arr.transpose((2, 0, 1))
         label = self.label_list[index]
 
         return img_arr, label, comp_id
@@ -455,11 +455,12 @@ class DEEPScreenDataset(tf.data.Dataset):
         dataset = tf.data.Dataset.range(len(self.compid_list))
         dataset = dataset.map(lambda index: tf.py_function(map_fn, [index], [tf.float32, tf.int32, tf.string]))
 
+
         return dataset
 
     def element_spec(self):
         """Return the expected element spec for the dataset."""
-        return tf.TensorSpec(shape=(None, 3, 224, 224), dtype=tf.float32), tf.TensorSpec(shape=(None,), dtype=tf.int32)
+        return tf.TensorSpec(shape=(224, 224, 3), dtype=tf.float32), tf.TensorSpec(shape=(None,), dtype=tf.int32)
 
     def _inputs(self):
         """Return the inputs for the dataset (image and label)."""
@@ -497,7 +498,7 @@ def get_train_test_val_data_loaders(target_id, batch_size=32):
     test_dataset = test_dataset.to_tf_dataset()
 
     # Shuffle and batch the datasets
-    train_dataset = train_dataset.shuffle(buffer_size=1000).batch(batch_size)
+    train_dataset = train_dataset.shuffle(buffer_size=32).batch(batch_size)
     validation_dataset = validation_dataset.batch(batch_size)
     test_dataset = test_dataset.batch(batch_size)
 

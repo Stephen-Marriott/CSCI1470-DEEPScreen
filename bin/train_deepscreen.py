@@ -115,6 +115,8 @@ def train_validation_test_training(target_id, model_name, fully_layer_1, fully_l
     best_val_mcc_score, best_test_mcc_score = 0.0, 0.0
     best_val_test_performance_dict = dict()
     best_val_test_performance_dict["MCC"] = 0.0
+    best_test_performance_dict = dict()
+    best_test_performance_dict["MCC"] = 0.0
 
     for epoch in range(n_epoch):
         total_training_count = 0
@@ -146,9 +148,8 @@ def train_validation_test_training(target_id, model_name, fully_layer_1, fully_l
             all_training_labels.extend(list(labels.numpy()))
             all_training_preds.extend(list(preds))
 
-        print(f"Inputs: {img_arrs[0]}")
-        print(f"Labels: {labels[0]}")
-        print(f"Prediction: {preds[0]}")
+        print(f"Labels: {labels}")
+        print(f"Prediction: {preds}")
 
         print("Epoch {} training loss:".format(epoch), total_training_loss)
 
@@ -177,7 +178,7 @@ def train_validation_test_training(target_id, model_name, fully_layer_1, fully_l
         except:
             print("There was a problem during test performance calculation!")
 
-        if val_perf_dict["MCC"] > best_val_mcc_score:
+        if epoch == 0 or val_perf_dict["MCC"] > best_val_mcc_score:
             best_val_mcc_score = val_perf_dict["MCC"]
             best_test_mcc_score = test_perf_dict["MCC"]
 
@@ -195,7 +196,6 @@ def train_validation_test_training(target_id, model_name, fully_layer_1, fully_l
             best_val_test_result_fl.close()
             best_val_test_prediction_fl.close()
 
-        
 
         
 
