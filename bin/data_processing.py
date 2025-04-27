@@ -2,15 +2,14 @@ import os
 import sys
 import cv2
 import json
-import torch
 import random
 import warnings
 import subprocess
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 from operator import itemgetter
-from torch.utils.data import Dataset
-from torch.utils.data.sampler import SubsetRandomSampler, BatchSampler, SequentialSampler
+
 """
 from rdkit import Chem
 from rdkit.Chem import Draw
@@ -413,7 +412,7 @@ def create_final_randomized_training_val_test_sets(neg_act_inact_fl, smiles_inch
             json.dump(tar_train_val_test_dict, fp)
 
 
-class DEEPScreenDataset(Dataset):
+class DEEPScreenDataset(tf.data.Dataset):
     def __init__(self, target_id, train_val_test):
         self.target_id = target_id
         self.train_val_test = train_val_test
@@ -443,26 +442,66 @@ class DEEPScreenDataset(Dataset):
 
         return img_arr, label, comp_id
 
+    def to_tf_dataset(self):
+        """
+        Converts this dataset to a TensorFlow Dataset.
+        This method allows usage of tf.data.Dataset for batch processing.
+        """
+
+        def map_fn(index):
+            return self.__getitem__(index)
+
+        # Create a tf.data.Dataset from the indices of the dataset
+        dataset = tf.data.Dataset.range(len(self.compid_list))
+        dataset = dataset.map(lambda index: tf.py_function(map_fn, [index], [tf.float32, tf.int32, tf.string]))
+
+        return dataset
+
+    def element_spec(self):
+        """Return the expected element spec for the dataset."""
+        return tf.TensorSpec(shape=(None, 3, 224, 224), dtype=tf.float32), tf.TensorSpec(shape=(None,), dtype=tf.int32)
+
+    def _inputs(self):
+        """Return the inputs for the dataset (image and label)."""
+        img_arrs = []
+        labels = []
+
+        for comp_id in self.compid_list:
+            img_path = os.path.join(self.training_dataset_path, "imgs", f"{comp_id}.png")
+            img_arr = cv2.imread(img_path)
+            if random.random() >= 0.50:
+                angle = random.randint(0, 359)
+                rows, cols, channel = img_arr.shape
+                rotation_matrix = cv2.getRotationMatrix2D((cols / 2, rows / 2), angle, 1)
+                img_arr = cv2.warpAffine(img_arr, rotation_matrix, (cols, rows), cv2.INTER_LINEAR,
+                                         borderValue=(255, 255, 255))
+
+            img_arr = np.array(img_arr) / 255.0
+            img_arr = img_arr.transpose((2, 0, 1))  # Convert HxWxC to CxHxW format
+            label = self.label_list[self.compid_list.index(comp_id)]
+
+            img_arrs.append(img_arr)
+            labels.append(label)
+
+        return np.array(img_arrs), np.array(labels)
+
 
 def get_train_test_val_data_loaders(target_id, batch_size=32):
     training_dataset = DEEPScreenDataset(target_id, "training")
     validation_dataset = DEEPScreenDataset(target_id, "validation")
     test_dataset = DEEPScreenDataset(target_id, "test")
 
-    train_sampler = SubsetRandomSampler(range(len(training_dataset)))
-    train_loader = torch.utils.data.DataLoader(training_dataset, batch_size=batch_size,
-                                              sampler=train_sampler)
-    
-    validation_sampler = SubsetRandomSampler(range(len(validation_dataset)))
-    validation_loader = torch.utils.data.DataLoader(validation_dataset, batch_size=batch_size,
-                                               sampler=validation_sampler)
+    # Convert to TensorFlow Dataset
+    train_dataset = training_dataset.to_tf_dataset()
+    validation_dataset = validation_dataset.to_tf_dataset()
+    test_dataset = test_dataset.to_tf_dataset()
 
-    test_sampler = SubsetRandomSampler(range(len(test_dataset)))
-    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,
-                                               sampler=test_sampler)
+    # Shuffle and batch the datasets
+    train_dataset = train_dataset.shuffle(buffer_size=1000).batch(batch_size)
+    validation_dataset = validation_dataset.batch(batch_size)
+    test_dataset = test_dataset.batch(batch_size)
 
-    return train_loader, validation_loader, test_loader
-
+    return train_dataset, validation_dataset, test_dataset
 
 def get_training_target_list(chembl_version):
     target_df = pd.read_csv(os.path.join(training_files_path, "{}_training_target_list.txt".format(chembl_version)), index_col=False, header=None)
