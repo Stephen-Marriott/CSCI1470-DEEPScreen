@@ -19,6 +19,7 @@ from attention_CNN import Attention_CNN
 from datetime import date
 import time
 import warnings
+
 warnings.filterwarnings(action='ignore')
 
 
@@ -192,10 +193,11 @@ def process_target_protein(protein_name,
     
 
 
-protein_list = ["CHEMBL1862",'CHEMBL2581','CHEMBL253']
+protein_list = ["CHEMBL1945","CHEMBL2288","CHEMBL3455","CHEMBL3522","CHEMBL3572","CHEMBL4018","CHEMBL4198",
+"CHEMBL4618","CHEMBL213","CHEMBL284","CHEMBL286","CHEMBL1862"]
     
-dd = ...
-mp = ...
+dd = r"C:\Users\wwels\OneDrive\Documents\GitHub\CSCI1470-DEEPScreen\Alternative Implementation\Data\\"
+mp = r"C:\Users\wwels\OneDrive\Documents\GitHub\CSCI1470-DEEPScreen\Alternative Implementation\Models\\"
 
 model_types = ['DEEPScreen','Alternative_CNN','Attention_CNN']
 
