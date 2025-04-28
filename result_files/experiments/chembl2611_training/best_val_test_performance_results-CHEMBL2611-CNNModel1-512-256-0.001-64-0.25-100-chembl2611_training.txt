@@ -1,0 +1,9 @@
+Test Precision:	1.0
+Test Recall:	0.6666666666666666
+Test F1-Score:	0.8
+Test Accuracy:	0.8
+Test MCC:	0.6666666666666666
+Test TP:	36
+Test FP:	0
+Test TN:	36
+Test FN:	18
