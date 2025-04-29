@@ -58,6 +58,10 @@ pip install -r requirements.txt
 
 * Run the **main_training.py** script as shown below
 
+## How to evaluate a model and get performance results
+
+* Run the **python bin/eval_model.py --model_path "trained_models/<experiment_name>" --target_id <experiment_id>** command
+
 ## Explanation of Parameters
 
 * **--targetid**: Target to be trained (default: CHEMBL286)
