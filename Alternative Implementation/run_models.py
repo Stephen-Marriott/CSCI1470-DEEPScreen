@@ -193,11 +193,13 @@ def process_target_protein(protein_name,
     
 
 
-protein_list = ["CHEMBL1945","CHEMBL2288","CHEMBL3455","CHEMBL3522","CHEMBL3572","CHEMBL4018","CHEMBL4198",
-"CHEMBL4618","CHEMBL213","CHEMBL284","CHEMBL286","CHEMBL1862"]
-    
-dd = r"C:\Users\wwels\OneDrive\Documents\GitHub\CSCI1470-DEEPScreen\Alternative Implementation\Data\\"
-mp = r"C:\Users\wwels\OneDrive\Documents\GitHub\CSCI1470-DEEPScreen\Alternative Implementation\Models\\"
+protein_list = ["CHEMBL1945","CHEMBL2288","CHEMBL3455","CHEMBL3522","CHEMBL3572",
+                "CHEMBL4018","CHEMBL4198","CHEMBL213","CHEMBL284","CHEMBL286",
+                "CHEMBL1862","CHEMBL253","CHEMBL4111","CHEMBL4630","CHEMBL3267"]
+
+
+dd = r'/Users/wwelsh/Documents/GitHub/CSCI1470-DEEPScreen/Alternative Implementation/Data/'
+mp = r"/Users/wwelsh/Documents/GitHub/CSCI1470-DEEPScreen/Alternative Implementation/Models/"
 
 model_types = ['DEEPScreen','Alternative_CNN','Attention_CNN']
 
